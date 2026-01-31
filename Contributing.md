@@ -58,7 +58,7 @@ go test ./...
 
 ## 🧹 Code Style & Guidelines
 
-- Follow standard Go formatting (gofmt)
+- Follow standard Go formatting (```gofmt```)
 - Keep functions small and readable
 - Avoid unnecessary abstractions
 - Prefer explicit behavior over magic
