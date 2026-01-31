@@ -11,7 +11,6 @@
   <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
   <img src="https://img.shields.io/badge/interface-TUI-green" />
   <img src="https://img.shields.io/badge/platform-terminal-black" />
-  <img src="https://img.shields.io/badge/style-retro--terminal-brightgreen" />
 </p>
 
 <p align="center">
