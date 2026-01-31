@@ -4,9 +4,12 @@
     alt="tuidoo"
     height="200"
   />
+  <p align="center">
+  <img src="https://img.shields.io/badge/TUI-retro-green" />
+  <img src="https://img.shields.io/badge/license-MIT-blue" />
+</p>
 </h1>
 
 <p align="center">
   <em>A retro TUI todo manager</em>
 </p>
-A tui todo app
