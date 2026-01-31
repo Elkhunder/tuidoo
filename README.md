@@ -4,10 +4,7 @@
     alt="tuidoo"
     height="200"
   />
-  <p align="center">
-  <img src="https://img.shields.io/badge/TUI-retro-green" />
-  <img src="https://img.shields.io/badge/license-MIT-blue" />
-</p>
+  <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="License: GPL v3" />
 </h1>
 
 <p align="center">
