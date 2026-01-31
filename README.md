@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/language-Go-blue" />
-  <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
-  <img src="https://img.shields.io/badge/interface-TUI-green" />
-  <img src="https://img.shields.io/badge/platform-Terminal-green" />
+  <img src="https://img.shields.io/badge/Language-Go-blue" />
+  <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
+  <img src="https://img.shields.io/badge/Interface-TUI-green" />
+  <img src="https://img.shields.io/badge/Platform-Terminal-green" />
 </p>
 
 <p align="center">
