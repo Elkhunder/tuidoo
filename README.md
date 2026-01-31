@@ -1,10 +1,10 @@
-<h1 align="center">
+<p align="center">
   <img
     src="https://github.com/user-attachments/assets/f95690a5-3b63-4761-89eb-26ee4ac2f728"
     alt="tuidoo"
     height="200"
   />
-</h1>
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/language-Go-blue" />
