@@ -1,5 +1,3 @@
-# README.md
-
 <h1 align="center">
   <img
     src="https://github.com/user-attachments/assets/f95690a5-3b63-4761-89eb-26ee4ac2f728"
