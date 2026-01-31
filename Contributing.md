@@ -32,11 +32,9 @@ git checkout -b feature/my-feature
 
 ### 3. Make your changes
 
-Keep changes focused and minimal
-
-Follow idiomatic Go practices
-
-Prefer clarity over cleverness
+- Keep changes focused and minimal
+- Follow idiomatic Go practices
+- Prefer clarity over cleverness
 
 ### 4. Test your changes
 
@@ -47,50 +45,39 @@ go build ./...
 ```
 ### 5. Commit your work
 
-Write clear, descriptive commit messages, for example:
-
-Add basic todo list navigation
-
-Fix crash when deleting last item
+- Write clear, descriptive commit messages, for example:
+- Add basic todo list navigation
+- Fix crash when deleting last item
 
 ### 6. Open a Pull Request
 
-Describe what you changed and why
-
-Reference issues where applicable
-
-Be open to feedback
+- Describe what you changed and why
+- Reference issues where applicable
+- Be open to feedback
 
 ## 🧹 Code Style & Guidelines
-Follow standard Go formatting (gofmt)
 
-Keep functions small and readable
-
-Avoid unnecessary abstractions
-
-Prefer explicit behavior over magic
+- Follow standard Go formatting (gofmt)
+- Keep functions small and readable
+- Avoid unnecessary abstractions
+- Prefer explicit behavior over magic
 
 ## 🐛 Reporting Issues
-When reporting bugs, please include:
 
-What you expected to happen
-
-What actually happened
-
-Steps to reproduce
-
-Your OS and Go version
+- When reporting bugs, please include:
+- What you expected to happen
+- What actually happened
+- Steps to reproduce
+- Your OS and Go version
 
 ## 💡 Feature Requests
-Feature ideas are welcome, but keep in mind:
 
-tuidoo aims to stay simple and fast
-
-Features should fit a terminal-first workflow
-
-Large changes should be discussed before implementation
+- Feature ideas are welcome, but keep in mind:
+- tuidoo aims to stay simple and fast
+- Features should fit a terminal-first workflow
+- Large changes should be discussed before implementation
 
 ## ❤️ Final Note
-tuidoo is an early-stage project.
-Constructive feedback, patience, and collaboration are appreciated.
-Thanks for helping make tuidoo better!
+- tuidoo is an early-stage project.
+- Constructive feedback, patience, and collaboration are appreciated.
+- Thanks for helping make tuidoo better!
