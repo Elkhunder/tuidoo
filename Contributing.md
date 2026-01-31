@@ -46,8 +46,8 @@ go build ./...
 ### 5. Commit your work
 
 - Write clear, descriptive commit messages, for example:
-- Add basic todo list navigation
-- Fix crash when deleting last item
+  - Add basic todo list navigation
+  - Fix crash when deleting last item
 
 ### 6. Open a Pull Request
 
