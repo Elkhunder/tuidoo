@@ -66,17 +66,17 @@ go test ./...
 ## 🐛 Reporting Issues
 
 - When reporting bugs, please include:
-- What you expected to happen
-- What actually happened
-- Steps to reproduce
-- Your OS and Go version
+  - What you expected to happen
+  - What actually happened
+  - Steps to reproduce
+  - Your OS and Go version
 
 ## 💡 Feature Requests
 
 - Feature ideas are welcome, but keep in mind:
-- tuidoo aims to stay simple and fast
-- Features should fit a terminal-first workflow
-- Large changes should be discussed before implementation
+  - tuidoo aims to stay simple and fast
+  - Features should fit a terminal-first workflow
+  - Large changes should be discussed before implementation
 
 ## ❤️ Final Note
 - tuidoo is an early-stage project.
