@@ -86,12 +86,14 @@ cd tuidoo
 go build ./...
 ```
 
-Run locally:
+### Run locally:
+
 ```bash
 ./tuidoo
 ```
 
 ## 🛠️ Tech Stack
+
 - Language: Go
 - TUI Framework: tview
 - License: GPLv3
