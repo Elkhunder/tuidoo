@@ -42,6 +42,7 @@ Ensure the application builds and runs correctly.
 
 ```bash
 go build ./...
+go test ./...
 ```
 ### 5. Commit your work
 
