@@ -39,12 +39,12 @@
        text-anchor="start"
        fill="url(#gradient)"
        filter="url(#glow)">
-        <text x="0" y="50" xml:space="preserve">████████╗██╗   ██╗██╗██████╗  ██████╗  ██████╗</text>
-        <text x="0" y="95" xml:space="preserve">╚══██╔══╝██║   ██║██║██╔══██╗██╔═══██╗██╔═══██╗</text>
-        <text x="0" y="140" xml:space="preserve">   ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
-        <text x="0" y="185" xml:space="preserve">   ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
-        <text x="0" y="230" xml:space="preserve">   ██║   ╚██████╔╝██║██████╔╝╚██████╔╝╚██████╔╝</text>
-        <text x="0" y="275" xml:space="preserve">   ╚═╝    ╚═════╝ ╚═╝╚═════╝  ╚═════╝  ╚═════╝</text>
+        <text x="0" y="50" xml:space="preserve">████████╗ ██╗   ██╗ ██╗ ██████╗   ██████╗   ██████╗</text>
+        <text x="0" y="95" xml:space="preserve">╚══██╔══╝ ██║   ██║ ██║ ██╔══██╗ ██╔═══██╗ ██╔═══██╗</text>
+        <text x="48" y="140" xml:space="preserve"> ██║    ██║   ██║ ██║ ██║  ██║ ██║   ██║ ██║   ██║</text>
+        <text x="48" y="185" xml:space="preserve"> ██║    ██║   ██║ ██║ ██║  ██║ ██║   ██║ ██║   ██║</text>
+        <text x="48" y="230" xml:space="preserve"> ██║    ╚██████╔╝ ██║ ██████╔╝ ╚██████╔╝ ╚██████╔╝</text>
+        <text x="48" y="275" xml:space="preserve"> ╚═╝     ╚═════╝  ╚═╝ ╚═════╝   ╚═════╝   ╚═════╝</text>
         <!-- Subtitle -->
         <text x="600" y="330" class="subtitle" text-anchor="middle">Terminal UI • Task Management • Built with Go</text>
     </g>

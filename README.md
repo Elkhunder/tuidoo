@@ -1,19 +1,19 @@
-<p align="center">
+<p style="text-align: center;">
   <img
     src="header/header.svg"
-    alt="tuidoo"
-    style="max-width: 50%;"
+    alt="tuidoo header"
+    style="width: 30rem"
   />
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Language-Go-blue" alt="Go"/>
-  <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
-  <img src="https://img.shields.io/badge/Interface-TUI-green" />
-  <img src="https://img.shields.io/badge/Platform-Terminal-green" />
+<p style="text-align: center;">
+  <img src="https://img.shields.io/badge/Language-Go-blue" alt="Go Language Badge"/>
+  <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPLv3 License Badge"/>
+  <img src="https://img.shields.io/badge/Interface-TUI-green" alt="TUI Interface Badge"/>
+  <img src="https://img.shields.io/badge/Platform-Terminal-green" alt="Terminal Platform Badge"/>
 </p>
 
-<p align="center">
+<p style="text-align: center;">
   <em>A retro TUI todo manager</em>
 </p>
 
@@ -21,7 +21,7 @@
 
 ## 📟 About
 
-**tuidoo** is an early-stage terminal-based todo manager written in Go.  
+**TUIDOO** is an early-stage terminal-based todo manager written in Go.  
 It focuses on **keyboard-first workflows**, **fast startup**, and a **retro terminal aesthetic** inspired by classic computing.
 
 The goal is to keep task management simple, fast, and enjoyable — without leaving the terminal.
@@ -44,7 +44,7 @@ The goal is to keep task management simple, fast, and enjoyable — without leav
 ## 🗺️ Roadmap
 
 ### Phase 1 — Core Functionality
-- [ ] Project skeleton and command entry point  
+- [x] Project skeleton and command entry point  
 - [ ] Basic TUI layout (list + detail view)  
 - [ ] In-memory todo model  
 - [ ] Keyboard navigation  
@@ -56,8 +56,9 @@ The goal is to keep task management simple, fast, and enjoyable — without leav
 - [ ] Data migration strategy  
 
 ### Phase 3 — UX & Polish
-- [ ] Retro color themes  
-- [ ] Config file support  
+- [ ] Retro color themes 
+- [ ] Theme customization
+- [ ] Config file support
 - [ ] Help / keybinding overlay  
 - [ ] Error handling and recovery  
 
