@@ -1,21 +1,12 @@
-<p style="text-align: center;">
-  <img
+
+<!--suppress HtmlDeprecatedAttribute -->
+<div align="center">
+    <img
     src="header/header.svg"
     alt="tuidoo header"
-    style="width: 30rem"
-  />
-</p>
-
-<p style="text-align: center;">
-  <img src="https://img.shields.io/badge/Language-Go-blue" alt="Go Language Badge"/>
-  <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="GPLv3 License Badge"/>
-  <img src="https://img.shields.io/badge/Interface-TUI-green" alt="TUI Interface Badge"/>
-  <img src="https://img.shields.io/badge/Platform-Terminal-green" alt="Terminal Platform Badge"/>
-</p>
-
-<p style="text-align: center;">
-  <em>A retro TUI todo manager</em>
-</p>
+    width="400"
+    />
+</div>
 
 ---
 

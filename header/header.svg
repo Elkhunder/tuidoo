@@ -10,7 +10,7 @@
             }
             .subtitle {
             font-family: 'Arial', sans-serif;
-            font-size: 26px;
+            font-size: 30px;
             font-style: italic;
             fill: #00FFFF;
             opacity: 0.8;
