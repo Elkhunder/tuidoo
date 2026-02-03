@@ -1,0 +1,53 @@
+<svg viewBox="0 0 1400 400" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <style>
+            .ascii-text {
+            font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
+            font-size: 40px;
+            font-weight: bold;
+            white-space: pre;
+            letter-spacing: 0;
+            }
+            .subtitle {
+            font-family: 'Arial', sans-serif;
+            font-size: 26px;
+            font-style: italic;
+            fill: #00FFFF;
+            opacity: 0.8;
+            }
+        </style>
+
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00FF00;stop-opacity:1" />
+            <stop offset="25%" style="stop-color:#00FF66;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#00FFCC;stop-opacity:1" />
+            <stop offset="75%" style="stop-color:#00CCFF;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0099FF;stop-opacity:1" />
+        </linearGradient>
+
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <g transform="translate(100, 0)"
+       class="ascii-text"
+       text-anchor="start"
+       fill="url(#gradient)"
+       filter="url(#glow)">
+        <text x="0" y="50" xml:space="preserve">████████╗██╗   ██╗██╗██████╗  ██████╗  ██████╗</text>
+        <text x="0" y="95" xml:space="preserve">╚══██╔══╝██║   ██║██║██╔══██╗██╔═══██╗██╔═══██╗</text>
+        <text x="0" y="140" xml:space="preserve">   ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+        <text x="0" y="185" xml:space="preserve">   ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+        <text x="0" y="230" xml:space="preserve">   ██║   ╚██████╔╝██║██████╔╝╚██████╔╝╚██████╔╝</text>
+        <text x="0" y="275" xml:space="preserve">   ╚═╝    ╚═════╝ ╚═╝╚═════╝  ╚═════╝  ╚═════╝</text>
+        <!-- Subtitle -->
+        <text x="600" y="330" class="subtitle" text-anchor="middle">Terminal UI • Task Management • Built with Go</text>
+    </g>
+
+
+</svg>

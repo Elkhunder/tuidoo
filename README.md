@@ -1,13 +1,13 @@
 <p align="center">
   <img
-    src="https://github.com/user-attachments/assets/f95690a5-3b63-4761-89eb-26ee4ac2f728"
+    src="header/header.svg"
     alt="tuidoo"
-    height="200"
+    style="max-width: 50%;"
   />
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Language-Go-blue" />
+  <img src="https://img.shields.io/badge/Language-Go-blue" alt="Go"/>
   <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
   <img src="https://img.shields.io/badge/Interface-TUI-green" />
   <img src="https://img.shields.io/badge/Platform-Terminal-green" />
