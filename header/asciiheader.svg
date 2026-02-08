@@ -1,0 +1,41 @@
+<svg width="1400" height="300" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00FF00;stop-opacity:1">
+                <animate attributeName="stop-color" values="#00FF00; #00FFFF; #0099FF; #00FFFF; #00FF00" dur="8s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="50%" style="stop-color:#00FFFF;stop-opacity:1">
+                <animate attributeName="stop-color" values="#00FFFF; #0099FF; #00FFFF; #00FF00; #00FFFF" dur="8s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="100%" style="stop-color:#0099FF;stop-opacity:1">
+                <animate attributeName="stop-color" values="#0099FF; #00FFFF; #00FF00; #00FFFF; #0099FF" dur="8s" repeatCount="indefinite"/>
+            </stop>
+        </linearGradient>
+
+        <filter id="neon">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <style>
+        .ascii {
+        font-family: 'Courier New', monospace;
+        font-size: 32px;
+        font-weight: bold;
+        fill: url(#grad1);
+        filter: url(#neon);
+        }
+    </style>
+
+    <text x="50" y="50" class="ascii" xml:space="preserve">████████╗██╗   ██╗██╗██████╗  ██████╗  ██████╗</text>
+    <text x="50" y="90" class="ascii" xml:space="preserve">╚══██╔══╝██║   ██║██║██╔══██╗██╔═══██╗██╔═══██╗</text>
+    <text x="70" y="130" class="ascii" xml:space="preserve">  ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+    <text x="70" y="170" class="ascii" xml:space="preserve">  ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+    <text x="70" y="210" class="ascii" xml:space="preserve">  ██║   ╚██████╔╝██║██████╔╝╚██████╔╝╚██████╔╝</text>
+    <text x="70" y="250" class="ascii" xml:space="preserve">  ╚═╝    ╚═════╝ ╚═╝╚═════╝  ╚═════╝  ╚═════╝</text>
+</svg>

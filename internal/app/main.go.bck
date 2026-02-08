@@ -1,0 +1,823 @@
+package app
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"tuidoo/entities"
+	"tuidoo/enums"
+	"tuidoo/managers"
+	"tuidoo/services"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+)
+
+const (
+	PageMain    = "main"
+	PageThemes  = "themes"
+	PageWelcome = "welcome"
+)
+
+// App holds the application state
+type App struct {
+	tviewApp     *tview.Application
+	services     *services.ServiceCollection
+	themeManager *managers.ThemeManager
+
+	// UI Components
+	header        *tview.TextView
+	menu          *tview.List
+	todoTable     *tview.Table
+	themeSelector *tview.List
+	mainContent   *tview.TextView
+	pages         *tview.Pages
+	layout        *tview.Flex
+	detailsModal  *tview.Flex
+
+	isApplyingTheme bool
+}
+
+// RunTUI starts the TUI application
+func RunTUI() error {
+	app, err := initializeApp()
+	if err != nil {
+		return fmt.Errorf("failed to initialize app: %w", err)
+	}
+	defer app.cleanup()
+
+	if err := app.buildUI(); err != nil {
+		return fmt.Errorf("failed to build UI: %w", err)
+	}
+
+	log.Println("🚀 Starting TUIDOO...")
+	if err := app.tviewApp.SetRoot(app.createLayout(), true).EnableMouse(true).Run(); err != nil {
+		return fmt.Errorf("error running tuidoo: %w", err)
+	}
+
+	return nil
+}
+
+// initServices initializes only the service layer (for CLI commands)
+func initServices() (*services.ServiceCollection, error) {
+	sc, err := services.NewServiceCollection()
+	if err != nil {
+		return nil, fmt.Errorf("service initialization failed: %w", err)
+	}
+	return sc, nil
+}
+
+// initializeApp initializes the full application (for TUI)
+func initializeApp() (*App, error) {
+	log.Println("Initializing application...")
+
+	sc, err := services.NewServiceCollection()
+	if err != nil {
+		return nil, fmt.Errorf("service initialization failed: %w", err)
+	}
+
+	projects, toDoLists, todos, err := loadData(sc)
+	if err != nil {
+		sc.Close()
+		return nil, fmt.Errorf("data loading failed: %w", err)
+	}
+
+	log.Printf("✓ Loaded %d projects, %d lists, %d todos", len(projects), len(toDoLists), len(todos))
+
+	themeManager := managers.NewThemeManager()
+	if err := applyUserTheme(sc, themeManager); err != nil {
+		sc.Close()
+		return nil, fmt.Errorf("theme initialization failed: %w", err)
+	}
+
+	return &App{
+		tviewApp:     tview.NewApplication(),
+		services:     sc,
+		themeManager: themeManager,
+	}, nil
+}
+
+func loadData(sc *services.ServiceCollection) ([]entities.Project, []entities.ToDoList, []entities.ToDo, error) {
+	projectList, err := sc.ProjectService.GetAll(true)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to fetch projects: %w", err)
+	}
+
+	listList, err := sc.ToDoListService.GetAll(true)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to fetch todo lists: %w", err)
+	}
+
+	todoList, err := sc.ToDoService.GetAll(true)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to fetch todos: %w", err)
+	}
+
+	return projectList, listList, todoList, nil
+}
+
+func applyUserTheme(sc *services.ServiceCollection, tm *managers.ThemeManager) error {
+	settings, err := sc.SettingsService.GetAllSettings()
+	if err != nil {
+		return fmt.Errorf("failed to get settings: %w", err)
+	}
+
+	if err := tm.SetTheme(settings.ActiveThemeID); err != nil {
+		return fmt.Errorf("failed to set theme: %w", err)
+	}
+
+	log.Printf("✓ Applied theme: %s", settings.ActiveThemeID)
+	return nil
+}
+
+func (app *App) cleanup() {
+	log.Println("Shutting down...")
+	if err := app.services.Close(); err != nil {
+		log.Printf("Error during cleanup: %v", err)
+	}
+}
+
+// ============================================================================
+// UI Building Methods
+// ============================================================================
+
+func (app *App) buildUI() error {
+	log.Println("Building UI...")
+
+	app.createHeader()
+	app.createMenu()
+	app.createTodoTable()
+	app.createThemeSelector()
+	app.createMainContent()
+	app.createPages()
+	app.setupInputCapture()
+
+	log.Println("✓ UI built successfully")
+	return nil
+}
+
+func (app *App) createHeader() {
+	app.header = tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetText(app.themeManager.CreateHeader())
+
+	app.header.SetBorderPadding(2, 2, 0, 0)
+}
+
+func (app *App) createMenu() {
+	theme := app.themeManager.GetCurrentTheme()
+	app.menu = tview.NewList().SetHighlightFullLine(true)
+
+	app.menu.AddItem("New Task", "Create new task", 'n', func() {
+		app.showNotImplemented("New Task")
+	}).
+		AddItem("View ToDos", "View all todos", 'l', func() {
+			app.pages.SwitchToPage("main")
+			app.tviewApp.SetFocus(app.todoTable)
+		}).
+		AddItem("Projects", "Manage projects", 'p', func() {
+			app.showNotImplemented("Projects")
+		}).
+		AddItem("Settings", "App settings", 's', func() {
+			app.pages.SwitchToPage("themes")
+			app.tviewApp.SetFocus(app.themeSelector)
+		}).
+		AddItem("Quit", "Exit application", 'q', func() {
+			app.tviewApp.Stop()
+		})
+
+	app.menu.SetBorder(true).
+		SetTitle(" Menu ").
+		SetBorderPadding(0, 0, 2, 2)
+
+	// Apply theme colors
+	app.menu.SetMainTextColor(theme.Colors.Foreground)
+	app.menu.SetSelectedBackgroundColor(theme.Colors.Primary)
+	app.menu.SetSelectedTextColor(theme.Colors.Background)
+}
+
+func (app *App) createTodoTable() {
+	theme := app.themeManager.GetCurrentTheme()
+	app.todoTable = tview.NewTable().SetSelectable(true, false)
+
+	// Set headers
+	headers := []string{"✓", "Priority", "Task", "Project", "List", "Status"}
+	for col, header := range headers {
+		cell := tview.NewTableCell(header).
+			SetTextColor(theme.Colors.Foreground).
+			SetAlign(tview.AlignCenter).
+			SetSelectable(false)
+		app.todoTable.SetCell(0, col, cell)
+	}
+
+	// Populate todos
+	todos, err := app.services.ToDoService.GetAll(true)
+	if err != nil {
+		log.Printf("Failed to load todos: %v", err)
+		return
+	}
+
+	app.populateTodoTable(todos)
+
+	app.todoTable.SetTitle(" tuidoo — pre-alpha ")
+	app.todoTable.SetSelectedStyle(
+		tcell.StyleDefault.
+			Background(theme.Colors.Primary).
+			Foreground(theme.Colors.Background))
+
+	// ✅ Setup handlers
+	app.setupTableHandlers()
+}
+
+func getPriorityIcon(priority string) string {
+	switch priority {
+	case "High":
+		return "🔥"
+	case "Medium":
+		return "⚡"
+	case "Low":
+		return "💤"
+	default:
+		return ""
+	}
+}
+
+func (app *App) createThemeSelector() {
+	theme := app.themeManager.GetCurrentTheme()
+	app.themeSelector = tview.NewList()
+
+	for _, themeName := range app.themeManager.GetThemeNames() {
+		name := themeName // Capture for closure
+
+		// Mark current theme
+		displayName := name
+		if name == app.themeManager.GetCurrentTheme().Name {
+			displayName = "✓ " + name
+		}
+
+		app.themeSelector.AddItem(displayName, "", 0, func() {
+			if err := app.applyTheme(name); err != nil {
+				log.Printf("Failed to apply theme: %v", err)
+			}
+		})
+	}
+
+	app.themeSelector.SetTitle(" Select Theme ").
+		SetBorderPadding(2, 2, 2, 2)
+
+	// Apply theme colors
+	app.themeSelector.SetMainTextColor(theme.Colors.Foreground)
+	app.themeSelector.SetSelectedBackgroundColor(theme.Colors.Primary)
+	app.themeSelector.SetSelectedTextColor(theme.Colors.Background)
+}
+
+func (app *App) createMainContent() {
+	theme := app.themeManager.GetCurrentTheme()
+	app.mainContent = tview.NewTextView().
+		SetText("[-]Welcome to TUIDOO! Your tasks will appear here").
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter)
+
+	app.mainContent.
+		SetTitle(" Welcome ").
+		SetBorderPadding(2, 2, 2, 2).
+		SetTitleColor(theme.Colors.Foreground)
+
+	// Apply theme colors
+	app.mainContent.SetTextColor(theme.Colors.Foreground)
+}
+
+func (app *App) createPages() {
+
+	app.pages = tview.NewPages().
+		AddPage(PageMain, app.todoTable, true, true).
+		AddPage(PageThemes, app.themeSelector, true, false).
+		AddPage(PageWelcome, app.mainContent, true, false)
+
+	theme := app.themeManager.GetCurrentTheme()
+	app.pages.
+		SetBorder(true).
+		SetBorderPadding(0, 0, 2, 2).
+		SetTitleColor(theme.Colors.Foreground)
+}
+
+func (app *App) rebuildPages() {
+	pageNames := app.pages.GetPageNames(false)
+	for _, pageName := range pageNames {
+		app.pages.RemovePage(pageName)
+	}
+
+	app.createPages()
+}
+
+func (app *App) createLayout() *tview.Flex {
+	theme := app.themeManager.GetCurrentTheme()
+	mainLayout := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(app.menu, 30, 0, true).
+		AddItem(app.pages, 0, 1, false)
+
+	layout := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(app.header, 10, 0, false).
+		AddItem(mainLayout, 0, 1, true)
+
+	layout.SetBackgroundColor(theme.Colors.Background)
+
+	app.layout = layout
+
+	return layout
+}
+
+// ============================================================================
+// Input Handling
+// ============================================================================
+
+func (app *App) setupInputCapture() {
+	app.tviewApp.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if app.pages.HasPage("modal") {
+			return event
+		}
+
+		switch event.Key() {
+		case tcell.KeyTab:
+			app.handleTabKey()
+		case tcell.KeyEscape:
+			app.handleEscapeKey()
+		}
+
+		switch event.Rune() {
+		case 't':
+			app.toggleThemeSelector()
+		case 'q':
+			app.tviewApp.Stop()
+		case 'n':
+			app.showNotImplemented("New Task")
+		case ' ':
+			if app.tviewApp.GetFocus() == app.todoTable {
+				row, _ := app.todoTable.GetSelection()
+				if row > 0 {
+					todos, _ := app.services.ToDoService.GetAll(true)
+					if row-1 < len(todos) {
+						_ = app.toggleTodoDone(&todos[row-1])
+					}
+				}
+			}
+		}
+
+		return event
+	})
+}
+
+func (app *App) handleTabKey() {
+	switch app.tviewApp.GetFocus() {
+	case app.menu:
+		// Get current page and focus it
+		frontPage, _ := app.pages.GetFrontPage()
+		switch frontPage {
+		case "main":
+			app.tviewApp.SetFocus(app.todoTable)
+		case "themes":
+			app.tviewApp.SetFocus(app.themeSelector)
+		case "welcome":
+			app.tviewApp.SetFocus(app.mainContent)
+		default:
+			app.tviewApp.SetFocus(app.todoTable)
+		}
+	default:
+		app.tviewApp.SetFocus(app.menu)
+	}
+}
+
+func (app *App) handleEscapeKey() {
+	// Close any modals first
+	if app.pages.HasPage("modal") {
+		app.pages.RemovePage("modal")
+		app.pages.SwitchToPage("main")
+		app.tviewApp.SetFocus(app.todoTable)
+		return
+	}
+
+	// Return to main page
+	app.pages.SwitchToPage("main")
+	app.tviewApp.SetFocus(app.todoTable)
+}
+
+func (app *App) toggleThemeSelector() {
+	frontPage, _ := app.pages.GetFrontPage()
+
+	if frontPage == "themes" {
+		app.pages.SwitchToPage("main")
+		app.tviewApp.SetFocus(app.todoTable)
+	} else {
+		app.pages.SwitchToPage("themes")
+		app.tviewApp.SetFocus(app.themeSelector)
+	}
+}
+
+func (app *App) refreshThemeSelector() {
+	theme := app.themeManager.GetCurrentTheme()
+
+	// Clear the list first to prevent duplicates
+	app.themeSelector.Clear()
+
+	for _, themeName := range app.themeManager.GetThemeNames() {
+		name := themeName // Capture for closure
+
+		displayName := name
+		if name == app.themeManager.GetCurrentTheme().Name {
+			displayName = "✓ " + name
+		}
+
+		app.themeSelector.AddItem(displayName, "", 0, func() {
+			if err := app.applyTheme(name); err != nil {
+				log.Printf("Failed to apply theme: %v", err)
+			}
+		})
+	}
+
+	// Reapply theme colors
+	app.themeSelector.SetBackgroundColor(theme.Colors.Background)
+	app.themeSelector.SetMainTextColor(theme.Colors.Foreground)
+	app.themeSelector.SetSelectedBackgroundColor(theme.Colors.Primary)
+	app.themeSelector.SetSelectedTextColor(theme.Colors.Background)
+}
+
+// ============================================================================
+// Theme Management
+// ============================================================================
+
+func (app *App) applyTheme(themeName string) error {
+	// Prevent recursive calls
+	if app.isApplyingTheme {
+		return nil
+	}
+	app.isApplyingTheme = true
+	defer func() { app.isApplyingTheme = false }()
+
+	if err := app.themeManager.SetTheme(themeName); err != nil {
+		return fmt.Errorf("failed to set theme: %w", err)
+	}
+
+	// Save theme preference
+	if err := app.services.SettingsService.SetActiveTheme(themeName); err != nil {
+		return fmt.Errorf("failed to save theme preference: %w", err)
+	}
+
+	// Get the new theme
+	theme := app.themeManager.GetCurrentTheme()
+
+	// Update header
+	app.header.Clear()
+	app.header.SetText(app.themeManager.CreateHeader())
+
+	// Update menu colors
+	app.menu.SetMainTextColor(theme.Colors.Foreground)
+	app.menu.SetSelectedBackgroundColor(theme.Colors.Primary)
+	app.menu.SetSelectedTextColor(theme.Colors.Background)
+
+	// Update todo list colors
+	app.refreshTodoTable()
+
+	// Update theme selector colors (and refresh checkmarks)
+	app.refreshThemeSelector()
+
+	// Update main content colors
+	app.mainContent.SetTextColor(theme.Colors.Foreground)
+
+	// Update pages background
+	app.layout.SetBackgroundColor(theme.Colors.Background)
+
+	log.Printf("✓ Theme changed to: %s", themeName)
+	return nil
+}
+
+// ============================================================================
+// Todo Management
+// ============================================================================
+
+func (app *App) showTodoDetails(todo *entities.ToDo) {
+	theme := app.themeManager.GetCurrentTheme()
+
+	// Create form
+	form := tview.NewForm().
+		AddInputField("Task Name", todo.Name, 50, nil, func(text string) {
+			todo.Name = text
+		}).
+		AddInputField("Project", todo.Project.Name, 30, nil, nil).
+		AddInputField("List", todo.ToDoList.Name, 30, nil, nil).
+		AddDropDown("Priority", enums.PriorityOptions,
+			getPriorityIndex(todo.Priority.String()), func(option string, index int) {
+				todo.Priority = enums.Priority(index)
+			}).
+		AddDropDown("Status", enums.StatusOptions,
+			getStatusIndex(todo.Status.String()), func(option string, index int) {
+				todo.Status = enums.Status(index)
+			}).
+		AddCheckbox("Completed", todo.Done, func(checked bool) {
+			todo.Done = checked
+		}).
+		AddTextArea("Description", getDescription(todo), 50, 5, 0, func(text string) {
+			todo.Description = &text
+		}).
+		AddButton("Save", func() {
+			if err := app.saveTodo(todo); err != nil {
+				log.Printf("Failed to save todo: %v", err)
+				app.showError(fmt.Sprintf("Failed to save: %v", err))
+			}
+			app.pages.RemovePage("modal")
+			app.pages.SwitchToPage("main")
+			app.tviewApp.SetFocus(app.todoTable)
+			_ = app.refreshTodoTable()
+		}).
+		AddButton("Cancel", func() {
+			app.pages.RemovePage("modal")
+			app.pages.SwitchToPage("main")
+			app.tviewApp.SetFocus(app.todoTable)
+		})
+
+	form.SetBorder(true).
+		SetTitle(fmt.Sprintf(" Edit Todo: %s ", todo.Name)).
+		SetTitleAlign(tview.AlignLeft)
+
+	// Apply theme colors
+	form.SetBackgroundColor(theme.Colors.Background)
+	form.SetFieldBackgroundColor(theme.Colors.Background)
+	form.SetFieldTextColor(theme.Colors.Foreground)
+	form.SetButtonBackgroundColor(theme.Colors.Primary)
+	form.SetButtonTextColor(theme.Colors.Background)
+	form.SetLabelColor(theme.Colors.Foreground)
+
+	// ✅ Adjust the modal size to ensure buttons are visible
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 25, 1, true).              // ✅ Fixed height of 25 rows
+			AddItem(nil, 0, 1, false), 90, 1, true). // ✅ Fixed width of 90 columns
+		AddItem(nil, 0, 1, false)
+
+	app.pages.AddPage("modal", modal, true, true)
+	app.tviewApp.SetFocus(form)
+}
+
+func getStatusIndex(status string) int {
+	for i, s := range enums.StatusOptions {
+		if s == status {
+			return i
+		}
+	}
+	return 0
+}
+
+func getDescription(todo *entities.ToDo) string {
+	if todo.Description != nil && *todo.Description != "" {
+		return *todo.Description
+	}
+	if todo.Details != nil && *todo.Details != "" {
+		return *todo.Details
+	}
+	return "No description available"
+}
+
+func (app *App) showNotImplemented(feature string) {
+	modal := tview.NewModal().
+		SetText(fmt.Sprintf("%s feature coming soon!", feature)).
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			app.pages.RemovePage("modal")
+			app.pages.SwitchToPage("main")
+			app.tviewApp.SetFocus(app.todoTable)
+		})
+
+	app.pages.AddPage("modal", modal, true, true)
+}
+
+// ============================================================================
+// Utility Methods
+// ============================================================================
+
+func (app *App) refreshTodoTable() error {
+	theme := app.themeManager.GetCurrentTheme()
+
+	// Clear data rows
+	rowCount := app.todoTable.GetRowCount()
+	for row := rowCount - 1; row > 0; row-- {
+		app.todoTable.RemoveRow(row)
+	}
+
+	// Reload todos
+	todos, err := app.services.ToDoService.GetAll(true)
+	if err != nil {
+		return fmt.Errorf("failed to reload todos: %w", err)
+	}
+
+	if len(todos) == 0 {
+		emptyCell := tview.NewTableCell("No todos yet - Press 'n' to create a new task").
+			SetAlign(tview.AlignCenter).
+			SetTextColor(theme.Colors.Foreground).
+			SetExpansion(1)
+		app.todoTable.SetCell(1, 0, emptyCell)
+		return nil
+	}
+
+	app.populateTodoTable(todos)
+
+	// ✅ Re-setup handlers after refresh
+	app.setupTableHandlers()
+
+	return nil
+}
+
+func (app *App) setupTableHandlers() {
+	app.todoTable.SetSelectedFunc(func(row, column int) {
+		if row == 0 {
+			return // Skip header row
+		}
+
+		// Get the todo for this row
+		todos, err := app.services.ToDoService.GetAll(true)
+		if err != nil {
+			log.Printf("Failed to load todos: %v", err)
+			return
+		}
+
+		if row-1 < len(todos) {
+			app.showTodoDetails(&todos[row-1])
+		}
+	})
+}
+
+func (app *App) populateTodoTable(todos []entities.ToDo) {
+	theme := app.themeManager.GetCurrentTheme()
+
+	for row, todo := range todos {
+		app.todoTable.SetCell(
+			row+1, 0,
+			tview.NewTableCell(getStatusIcon(todo.Done)).
+				SetAlign(tview.AlignCenter).
+				SetTextColor(theme.Colors.Foreground).
+				SetSelectable(true).
+				SetClickedFunc(func() bool {
+					// Toggle the done status
+					_ = app.toggleTodoDone(&todo)
+					return true
+				}))
+
+		app.todoTable.SetCell(
+			row+1, 1,
+			tview.NewTableCell(todo.Priority.String()).
+				SetAlign(tview.AlignCenter).
+				SetTextColor(theme.Colors.Foreground))
+
+		app.todoTable.SetCell(
+			row+1, 2,
+			tview.NewTableCell(todo.Name).
+				SetTextColor(theme.Colors.Foreground))
+
+		app.todoTable.SetCell(
+			row+1, 3,
+			tview.NewTableCell(todo.Project.Name).
+				SetTextColor(theme.Colors.Foreground))
+
+		app.todoTable.SetCell(
+			row+1, 4,
+			tview.NewTableCell(todo.ToDoList.Name).
+				SetTextColor(theme.Colors.Foreground))
+
+		app.todoTable.SetCell(
+			row+1, 5,
+			tview.NewTableCell(todo.Status.String()).
+				SetTextColor(theme.Colors.Foreground))
+	}
+}
+
+func (app *App) toggleTodoDone(todo *entities.ToDo) error {
+	// Update in database
+	if !todo.Done {
+		if err := app.services.ToDoService.MarkAsComplete(todo.ID); err != nil {
+			return fmt.Errorf("failed to mark todo as complete: %w", err)
+		}
+	} else {
+		todo.Done = false
+		if err := app.services.ToDoService.MarkAsIncomplete(todo.ID); err != nil {
+			return fmt.Errorf("failed to mark todo as incomplete: %w", err)
+		}
+	}
+
+	_ = app.refreshTodoTable()
+
+	return nil
+}
+
+func getStatusIcon(done bool) string {
+	if done {
+		return "[✓]"
+	}
+	return "[ ]"
+}
+
+// SeedDatabase seeds the database with sample data
+func SeedDatabase() {
+	sc, err := initServices()
+	if err != nil {
+		log.Fatalf("Failed to initialize services: %v", err)
+	}
+	defer sc.Close()
+
+	if err := services.Seed(sc.DbService); err != nil {
+		log.Fatalf("❌ Seeding failed: %v", err)
+	}
+
+	fmt.Println("✅ Database seeded successfully")
+	os.Exit(0)
+}
+
+// ResetDatabase cleans and reseeds the database
+func ResetDatabase() {
+	sc, err := initServices()
+	if err != nil {
+		log.Fatalf("Failed to initialize services: %v", err)
+	}
+	defer sc.Close()
+
+	fmt.Println("⚠️  This will delete all existing data. Continue? (y/N)")
+	var response string
+	fmt.Scanln(&response)
+
+	if response != "y" && response != "Y" {
+		fmt.Println("Reset cancelled")
+		os.Exit(0)
+	}
+
+	if err := services.ResetAndSeed(sc.DbService); err != nil {
+		log.Fatalf("❌ Reset failed: %v", err)
+	}
+
+	fmt.Println("✅ Database reset successfully")
+	os.Exit(0)
+}
+
+// CleanDatabase removes all data from the database
+func CleanDatabase() {
+	sc, err := initServices()
+	if err != nil {
+		log.Fatalf("Failed to initialize services: %v", err)
+	}
+	defer sc.Close()
+
+	fmt.Println("⚠️  This will delete all data. Continue? (y/N)")
+	var response string
+	fmt.Scanln(&response)
+
+	if response != "y" && response != "Y" {
+		fmt.Println("Clean cancelled")
+		os.Exit(0)
+	}
+
+	if err := services.CleanDatabase(sc.DbService); err != nil {
+		log.Fatalf("❌ Clean failed: %v", err)
+	}
+
+	fmt.Println("✅ Database cleaned successfully")
+	os.Exit(0)
+}
+
+func getPriorityIndex(priority string) int {
+	switch priority {
+	case "Low":
+		return 0
+	case "Medium":
+		return 1
+	case "High":
+		return 2
+	default:
+		return 0
+	}
+}
+
+// Helper function to save todo
+func (app *App) saveTodo(todo *entities.ToDo) error {
+	// Update the todo in the database
+	if err := app.services.ToDoService.Update(todo); err != nil {
+		return fmt.Errorf("failed to update todo: %w", err)
+	}
+	//
+	//log.Printf("✓ Todo '%s' updated successfully", todo.Name)
+	return nil
+}
+
+// Helper function to show error messages
+func (app *App) showError(message string) {
+	modal := tview.NewModal().
+		SetText(fmt.Sprintf("Error: %s", message)).
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			app.pages.RemovePage("error")
+			app.pages.SwitchToPage("main")
+			app.tviewApp.SetFocus(app.todoTable)
+		})
+
+	app.pages.AddPage("error", modal, true, true)
+}

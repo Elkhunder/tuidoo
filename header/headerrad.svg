@@ -1,0 +1,72 @@
+<svg width="1400" height="350" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Animated diagonal gradient -->
+        <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00FF00;stop-opacity:1">
+                <animate attributeName="stop-color"
+                         values="#00FF00; #00FFFF; #0099FF; #FF00FF; #00FF00"
+                         dur="6s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="50%" style="stop-color:#00FFFF;stop-opacity:1">
+                <animate attributeName="stop-color"
+                         values="#00FFFF; #0099FF; #FF00FF; #00FF00; #00FFFF"
+                         dur="6s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="100%" style="stop-color:#0099FF;stop-opacity:1">
+                <animate attributeName="stop-color"
+                         values="#0099FF; #FF00FF; #00FF00; #00FFFF; #0099FF"
+                         dur="6s" repeatCount="indefinite"/>
+            </stop>
+        </linearGradient>
+
+        <!-- Neon glow effect -->
+        <filter id="superGlow">
+            <feGaussianBlur stdDeviation="4" result="blur1"/>
+            <feGaussianBlur stdDeviation="8" result="blur2"/>
+            <feGaussianBlur stdDeviation="16" result="blur3"/>
+            <feMerge>
+                <feMergeNode in="blur3"/>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+        <!-- Scanline effect -->
+        <pattern id="scanlines" x="0" y="0" width="100%" height="4" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="100%" height="2" fill="rgba(0,255,255,0.05)"/>
+        </pattern>
+    </defs>
+
+    <style>
+        .logo {
+        font-family: 'Courier New', 'Consolas', monospace;
+        font-size: 36px;
+        font-weight: 900;
+        fill: url(#mainGrad);
+        filter: url(#superGlow);
+        letter-spacing: 2px;
+        }
+        .subtitle {
+        font-family: 'Arial', sans-serif;
+        font-size: 18px;
+        font-style: italic;
+        fill: #00FFFF;
+        opacity: 0.8;
+        }
+    </style>
+
+    <!-- Scanline overlay -->
+    <rect width="100%" height="100%" fill="url(#scanlines)" opacity="0.3"/>
+
+    <!-- ASCII Logo -->
+    <text x="50" y="60" class="logo" xml:space="preserve">  ████████╗██╗   ██╗██╗██████╗  ██████╗  ██████╗</text>
+    <text x="70" y="105" class="logo" xml:space="preserve"> ╚══██╔══╝██║   ██║██║██╔══██╗██╔═══██╗██╔═══██╗</text>
+    <text x="70" y="150" class="logo" xml:space="preserve">    ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+    <text x="70" y="195" class="logo" xml:space="preserve">    ██║   ██║   ██║██║██║  ██║██║   ██║██║   ██║</text>
+    <text x="70" y="240" class="logo" xml:space="preserve">    ██║   ╚██████╔╝██║██████╔╝╚██████╔╝╚██████╔╝</text>
+    <text x="70" y="285" class="logo" xml:space="preserve">    ╚═╝    ╚═════╝ ╚═╝╚═════╝  ╚═════╝  ╚═════╝</text>
+
+    <!-- Subtitle -->
+    <text x="700" y="330" class="subtitle" text-anchor="middle">Terminal UI • Task Management • Built with Go</text>
+</svg>
